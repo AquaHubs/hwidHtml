@@ -98,7 +98,7 @@
     
     <div class="form-group">
         <label for="adminKey">Admin Key</label>
-        <input type="password" id="adminKey" value="a8g3b5e2kaa" placeholder="Введите ключ">
+        <input type="password" id="adminKey" value="a8g3b5e2kaa" readonly style="opacity: 0.7;">
     </div>
 
     <div class="form-group">
@@ -112,13 +112,26 @@
 </div>
 
 <script>
-async function banHWID() {
-    const adminKey = document.getElementById('adminKey').value;
-    const hwid = document.getElementById('hwid').value;
-    const statusDiv = document.getElementById('status');
+const ADMIN_KEY = "a8g3b5e2kaa";
 
-    if (!adminKey || !hwid) {
-        showStatus('Заполните все поля!', 'error');
+// Автоматическая загрузка последнего HWID
+window.onload = function() {
+    const savedHWID = localStorage.getItem('saved_hwid');
+    if (savedHWID) {
+        document.getElementById('hwid').value = savedHWID;
+    }
+};
+
+// Сохранение HWID при изменении
+document.getElementById('hwid').addEventListener('input', function(e) {
+    localStorage.setItem('saved_hwid', e.target.value);
+});
+
+async function banHWID() {
+    const hwid = document.getElementById('hwid').value.trim();
+
+    if (!hwid) {
+        showStatus('Введите HWID!', 'error');
         return;
     }
 
@@ -128,19 +141,18 @@ async function banHWID() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ hwid, adminKey })
+            body: JSON.stringify({ hwid: hwid, adminKey: ADMIN_KEY })
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
             showStatus('HWID успешно заблокирован!', 'success');
-            document.getElementById('hwid').value = '';
         } else {
-            showStatus('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+            showStatus('Ошибка: ' + (data.error || 'Неверный ключ или запрос'), 'error');
         }
     } catch (err) {
-        showStatus('Ошибка отправки запроса к серверу', 'error');
+        showStatus('Ошибка сети или сервера', 'error');
     }
 }
 
