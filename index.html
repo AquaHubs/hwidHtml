@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HWID Ban Panel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #4caf50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        input:focus {
+            border-color: #4caf50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #f44336;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #d32f2f;
+        }
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>HWID Admin Panel</h2>
+    
+    <div class="form-group">
+        <label for="adminKey">Admin Key</label>
+        <input type="password" id="adminKey" value="a8g3b5e2kaa" placeholder="Введите ключ">
+    </div>
+
+    <div class="form-group">
+        <label for="hwid">Target HWID</label>
+        <input type="text" id="hwid" placeholder="Вставьте HWID игрока">
+    </div>
+
+    <button onclick="banHWID()">Забанить HWID</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+async function banHWID() {
+    const adminKey = document.getElementById('adminKey').value;
+    const hwid = document.getElementById('hwid').value;
+    const statusDiv = document.getElementById('status');
+
+    if (!adminKey || !hwid) {
+        showStatus('Заполните все поля!', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('https://hwid-sand.vercel.app/api/ban', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hwid, adminKey })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showStatus('HWID успешно заблокирован!', 'success');
+            document.getElementById('hwid').value = '';
+        } else {
+            showStatus('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+        }
+    } catch (err) {
+        showStatus('Ошибка отправки запроса к серверу', 'error');
+    }
+}
+
+function showStatus(text, type) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent = text;
+    statusDiv.className = type;
+    statusDiv.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
